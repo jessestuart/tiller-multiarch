@@ -1,0 +1,164 @@
+version: 2.0
+
+workflows:
+  version: 2
+  commit:
+    jobs:
+      - build-amd64
+      - build-arm64
+      - build-armhf
+      - push-manifest:
+          requires:
+            - build-amd64
+            - build-arm64
+            - build-armhf
+  nightly:
+    jobs:
+      - build-amd64
+      - build-arm64
+      - build-armhf
+      - push-manifest:
+          requires:
+            - build-amd64
+            - build-arm64
+            - build-armhf
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - master
+
+shared: &shared
+  machine: true
+  steps:
+    - checkout
+
+    - run:
+        name: Install build dependencies.
+        command: sudo apt update && sudo apt install curl jq
+
+    - run:
+        # Unforunately, there's no easy way to "merge" anchors/references
+        # according to the # YAML 1.2 spec. So, the recommended way to handle
+        # this is to dump your # values into a file and source it at build time.
+        # @see e.g., https://circleci.com/docs/2.0/env-vars/#interpolating-environment-variables
+        name: Set up shared environment vars.
+        command: |
+          echo 'export GITHUB_REPO=jessestuart/helm' >> $BASH_ENV
+          echo 'export GO_REPO=k8s.io/helm' >> $BASH_ENV
+
+          echo 'export GOPATH=/home/circleci/go' >> $BASH_ENV
+          echo 'export GOROOT=/usr/local/go' >> $BASH_ENV
+
+          echo 'export PROJECT_PATH=$GOPATH/src/$GO_REPO' >> $BASH_ENV
+
+          echo 'export VERSION=$(curl -s https://api.github.com/repos/kubernetes/helm/releases/latest | jq -r ".tag_name")' >> $BASH_ENV
+          echo 'export REGISTRY=jessestuart' >> $BASH_ENV
+          echo 'export IMAGE=tiller' >> $BASH_ENV
+          echo 'export IMAGE_ID="${REGISTRY}/${IMAGE}:${VERSION}-${TAG}"' >> $BASH_ENV
+
+          source $BASH_ENV
+
+          sudo rm -rf /usr/local/go
+          sudo mkdir /usr/local/go
+          export CI_USER=$(whoami)
+          sudo chown "${CI_USER}:" /usr/local/go
+
+    - restore_cache:
+        keys:
+          - go-1.10
+
+    - run:
+        name: Update Go version.
+        command: |
+          if ! (go version | grep 1.10.1); then
+            curl -O https://storage.googleapis.com/golang/go1.10.1.linux-amd64.tar.gz
+            tar xzf go1.10.1.linux-amd64.tar.gz
+            sudo mv go/ /usr/local
+          fi
+
+    - save_cache:
+        key: go-1.10
+        paths:
+          - /usr/local/go
+
+    - run:
+        name: Install glide.
+        command: |
+          curl -sL https://github.com/Masterminds/glide/releases/download/v0.13.1/glide-v0.13.1-linux-amd64.tar.gz | tar -xz > /tmp/glide
+          chmod +x linux-amd64/glide
+          sudo mv linux-amd64/glide /usr/bin
+
+    - run:
+        name: Clone repo.
+        command: |
+          mkdir -p $PROJECT_PATH
+          git clone https://github.com/${GITHUB_REPO} --depth=1 \
+            $PROJECT_PATH &>/dev/null
+
+    - restore_cache:
+        keys:
+          - glide-{{ checksum "/home/circleci/go/src/k8s.io/helm/glide.yaml" }}-{{ checksum "/home/circleci/go/src/k8s.io/helm/glide.lock" }}
+          - glide-
+    - run:
+        name: Bootstrap repo dependencies.
+        command: |
+          cd $PROJECT_PATH && make bootstrap
+    - save_cache:
+        key: glide-{{ checksum "/home/circleci/go/src/k8s.io/helm/glide.yaml" }}-{{ checksum "/home/circleci/go/src/k8s.io/helm/glide.lock" }}
+        paths:
+          - /home/circleci/.glide
+
+    - run:
+        name: Compile tiller binary.
+        command: |
+          cd $PROJECT_PATH
+          # Go won't let us cross-compile if GOBIN is set.
+          sed -e 's/GOBIN=$(BINDIR) //' -i Makefile
+          make build
+
+    - run:
+        name: Build and push Docker image.
+        command: |
+          .circleci/push-multiarch.sh
+
+jobs:
+  build-amd64:
+    <<: *shared
+    environment:
+      GOARCH: amd64
+      TAG: amd64
+      TARGET: amd64
+      QEMU_ARCH: amd64
+  build-arm64:
+    <<: *shared
+    environment:
+      GOARCH: arm64
+      QEMU_ARCH: aarch64
+      QEMU_VERSION: v2.11.0
+      TAG: arm64
+      TARGET: arm64v8
+  build-armhf:
+    <<: *shared
+    environment:
+      GOARCH: arm
+      QEMU_ARCH: arm
+      QEMU_VERSION: v2.11.0
+      TAG: arm
+      TARGET: arm32v6
+  # ---------------------------------------
+  push-manifest:
+    docker:
+      - image: docker:18
+    environment:
+      GITHUB_REPO: kubernetes/helm
+      IMAGE: tiller
+      REGISTRY: jessestuart
+    steps:
+      - setup_remote_docker
+      - run:
+          name: Push multiarch manifest to Docker Hub.
+          command:
+            .circleci/push-manifest.sh
