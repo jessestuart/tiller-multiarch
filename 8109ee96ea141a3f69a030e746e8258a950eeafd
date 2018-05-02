@@ -1,2 +1,6 @@
 [ver:1,total:1320]
 README.md:1320,1525269600:1320,r
+
+[ver:1,total:780]
+.circleci/config.yml:750,1525269600:750,m
+Dockerfile:30,1525269600:30,r
