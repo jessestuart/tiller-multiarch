@@ -1,27 +1,22 @@
 version: 2.0
 
+build_jobs: &build_jobs
+  jobs:
+    - build-amd64
+    - build-arm64
+    - build-armhf
+    - push-manifest:
+        requires:
+          - build-amd64
+          - build-arm64
+          - build-armhf
+
 workflows:
   version: 2
   commit:
-    jobs:
-      - build-amd64
-      - build-arm64
-      - build-armhf
-      - push-manifest:
-          requires:
-            - build-amd64
-            - build-arm64
-            - build-armhf
+    <<: *build_jobs
   nightly:
-    jobs:
-      - build-amd64
-      - build-arm64
-      - build-armhf
-      - push-manifest:
-          requires:
-            - build-amd64
-            - build-arm64
-            - build-armhf
+    <<: *build_jobs
     triggers:
       - schedule:
           cron: "0 0 * * *"
@@ -69,7 +64,6 @@ shared: &shared
     - restore_cache:
         keys:
           - go-1.10
-
     - run:
         name: Update Go version.
         command: |
@@ -78,7 +72,6 @@ shared: &shared
             tar xzf go1.10.1.linux-amd64.tar.gz
             sudo mv go/ /usr/local
           fi
-
     - save_cache:
         key: go-1.10
         paths:
@@ -87,7 +80,7 @@ shared: &shared
     - run:
         name: Install glide.
         command: |
-          curl -sL https://github.com/Masterminds/glide/releases/download/v0.13.1/glide-v0.13.1-linux-amd64.tar.gz | tar -xz > /tmp/glide
+          curl -sL https://github.com/Masterminds/glide/releases/download/v0.13.1/glide-v0.13.1-linux-amd64.tar.gz | tar -xz
           chmod +x linux-amd64/glide
           sudo mv linux-amd64/glide /usr/bin
 
@@ -112,7 +105,7 @@ shared: &shared
           - /home/circleci/.glide
 
     - run:
-        name: Compile tiller binary.
+        name: Compile architecture-specific tiller binary.
         command: |
           cd $PROJECT_PATH
           # Go won't let us cross-compile if GOBIN is set.
@@ -148,17 +141,53 @@ jobs:
       QEMU_VERSION: v2.11.0
       TAG: arm
       TARGET: arm32v6
+
+  # =======================================
   # ---------------------------------------
+  # =======================================
+
   push-manifest:
     docker:
-      - image: docker:18
+      - image: docker:18-git
     environment:
       GITHUB_REPO: kubernetes/helm
       IMAGE: tiller
       REGISTRY: jessestuart
     steps:
+      - checkout
       - setup_remote_docker
       - run:
-          name: Push multiarch manifest to Docker Hub.
-          command:
-            .circleci/push-manifest.sh
+          name: Determine repo version.
+          command: |
+            apk update && apk add curl jq
+            curl -s https://api.github.com/repos/${GITHUB_REPO}/releases/latest | jq -r ".tag_name" > ~/VERSION
+
+      - run:
+          name: Install manifest-tool.
+          command: |
+            export VERSION=$(cat ~/VERSION)
+            echo "Downloading manifest-tool."
+            wget https://github.com/estesp/manifest-tool/releases/download/v0.7.0/manifest-tool-linux-amd64
+            mv manifest-tool-linux-amd64 /usr/bin/manifest-tool
+            chmod +x /usr/bin/manifest-tool
+            manifest-tool --version
+
+      - run:
+          name: Push Docker manifest.
+          command: |
+            export VERSION=$(cat ~/VERSION)
+            echo "Pushing manifest "$REGISTRY/$IMAGE":latest"
+            echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin;
+            manifest-tool push from-args \
+              --platforms linux/arm,linux/arm64,linux/amd64 \
+              --template "$REGISTRY/$IMAGE:$VERSION-ARCH" \
+              --target "$REGISTRY/$IMAGE:latest"
+            manifest-tool push from-args \
+              --platforms linux/arm,linux/arm64,linux/amd64 \
+              --template "$REGISTRY/$IMAGE:$VERSION-ARCH" \
+              --target "$REGISTRY/$IMAGE:$VERSION"
+      - run:
+          name: Verify manifest was persisted remotely.
+          command: |
+            export VERSION=$(cat ~/VERSION)
+            manifest-tool inspect "$REGISTRY/$IMAGE:$VERSION"
