@@ -1,0 +1,6 @@
+[ver:1,total:1800]
+.circleci/config.yml:891,1531141200:891,m
+.circleci/load_env.sh:314,1531141200:314,m
+.circleci/push-multiarch.sh:270,1531141200:270,m
+.circleci/install_go.sh:205,1531141200:205,m
+.circleci/push-manifest.sh:120,1531141200:120,r
