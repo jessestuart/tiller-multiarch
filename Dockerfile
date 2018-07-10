@@ -1,6 +1,7 @@
 ARG target
 
 FROM alpine:3.7 as certs
+# hadolint ignore=DL3018
 RUN apk add --no-cache ca-certificates
 
 FROM $target/alpine:3.7
