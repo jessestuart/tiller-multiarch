@@ -1,2 +1,12 @@
 [ver:1,total:180]
 .circleci/config.yml:180,1531209600:180,m
+
+[ver:1,total:120]
+.circleci/config.yml:120,1531209600:120,m
+
+[ver:1,total:240]
+.circleci/config.yml:140,1531209600:140,m
+.circleci/push-multiarch.sh:40,1531209600:40,r
+.circleci/push-manifest.sh:40,1531209600:40,r
+.circleci/install_go.sh:10,1531209600:10,m
+.circleci/load_env.sh:10,1531209600:10,r
