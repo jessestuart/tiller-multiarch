@@ -1,0 +1,7 @@
+[ver:1,total:660]
+Dockerfile:310,1531224000:150,1531227600:160,m
+.git/PULLREQ_EDITMSG:180,1531220400:180,d
+.circleci/install_go.sh:80,1531224000:80,m
+.circleci/push-manifest.sh:50,1531224000:50,r
+.circleci/config.yml:20,1531227600:20,r
+.circleci/build_binary.sh:20,1531224000:20,r
