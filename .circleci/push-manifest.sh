@@ -1,21 +1,13 @@
 #!/bin/bash
 
-echo 'Determine repo version.'
-apk update && apk add curl jq
-export VERSION=$(\
-  curl -s https://api.github.com/repos/${GITHUB_REPO}/releases/latest | \
-  jq -r ".tag_name"
-)
-
 echo 'Installing manifest-tool.'
-echo "Downloading manifest-tool."
-wget https://github.com/estesp/manifest-tool/releases/download/v0.7.0/manifest-tool-linux-amd64
-mv manifest-tool-linux-amd64 /usr/bin/manifest-tool
-chmod +x /usr/bin/manifest-tool
+wget https://github.com/estesp/manifest-tool/releases/download/v0.7.0/manifest-tool-linux-amd64 && \
+  mv manifest-tool-linux-amd64 /usr/bin/manifest-tool && \
+  chmod +x /usr/bin/manifest-tool
 manifest-tool --version
 
 echo 'Pushing Docker manifest.'
-echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin;
+docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASS
 
 manifest-tool push from-args \
   --platforms linux/arm,linux/arm64,linux/amd64 \

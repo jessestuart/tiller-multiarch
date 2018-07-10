@@ -34,7 +34,7 @@ shared: &shared
 
     - run:
         name: Install build dependencies.
-        command: apk add --no-cache bash curl jq make sudo
+        command: apk add --no-cache bash curl jq make
 
     - run:
         # Unforunately, there's no easy way to "merge" anchors/references
@@ -85,15 +85,7 @@ shared: &shared
         name: Compile architecture-specific tiller binary.
         command: |
           source "$BASH_ENV"
-          cd "$PROJECT_PATH"
-          # Go won't let us cross-compile if GOBIN is set.
-          sed -e 's/GOBIN=$(BINDIR) //' -i Makefile
-          make build
-          if test "$GOARCH" == 'amd64'; then
-            cp $(which tiller) "$DIR"
-          else
-            cp "${GOPATH}/bin/linux_${GOARCH}/tiller" "$DIR"
-          fi
+          .circleci/build_binary.sh
 
     - run:
         name: Build and push Docker image.
@@ -132,37 +124,39 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: Determine repo version.
-          command: |
-            apk add --no-cache bash curl jq
-            curl -s https://api.github.com/repos/${GITHUB_REPO}/releases/latest | jq -r ".tag_name" > ~/VERSION
-
-      - run:
-          name: Install manifest-tool.
-          command: |
-            export VERSION=$(cat ~/VERSION)
-            echo "Downloading manifest-tool."
-            wget https://github.com/estesp/manifest-tool/releases/download/v0.7.0/manifest-tool-linux-amd64
-            mv manifest-tool-linux-amd64 /usr/bin/manifest-tool
-            chmod +x /usr/bin/manifest-tool
-            manifest-tool --version
-
-      - run:
           name: Push Docker manifest.
           command: |
-            export VERSION=$(cat ~/VERSION)
-            echo "Pushing manifest "$REGISTRY/$IMAGE":latest"
-            echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin;
-            manifest-tool push from-args \
-              --platforms linux/arm,linux/arm64,linux/amd64 \
-              --template "$REGISTRY/$IMAGE:$VERSION-ARCH" \
-              --target "$REGISTRY/$IMAGE:latest"
-            manifest-tool push from-args \
-              --platforms linux/arm,linux/arm64,linux/amd64 \
-              --template "$REGISTRY/$IMAGE:$VERSION-ARCH" \
-              --target "$REGISTRY/$IMAGE:$VERSION"
-      - run:
-          name: Verify manifest was persisted remotely.
-          command: |
-            export VERSION=$(cat ~/VERSION)
-            manifest-tool inspect "$REGISTRY/$IMAGE:$VERSION"
+            apk add --no-cache bash curl jq
+            .circleci/load_env.sh
+            .circleci/push-manifest.sh
+            # curl -s https://api.github.com/repos/${GITHUB_REPO}/releases/latest | jq -r ".tag_name" > ~/VERSION
+
+      # - run:
+          # name: Install manifest-tool.
+          # command: |
+            # export VERSION=$(cat ~/VERSION)
+            # echo "Downloading manifest-tool."
+            # wget https://github.com/estesp/manifest-tool/releases/download/v0.7.0/manifest-tool-linux-amd64
+            # mv manifest-tool-linux-amd64 /usr/bin/manifest-tool
+            # chmod +x /usr/bin/manifest-tool
+            # manifest-tool --version
+
+      # - run:
+          # name: Push Docker manifest.
+          # command: |
+            # export VERSION=$(cat ~/VERSION)
+            # echo "Pushing manifest "$REGISTRY/$IMAGE":latest"
+            # echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin;
+            # manifest-tool push from-args \
+            #   --platforms linux/arm,linux/arm64,linux/amd64 \
+            #   --template "$REGISTRY/$IMAGE:$VERSION-ARCH" \
+            #   --target "$REGISTRY/$IMAGE:latest"
+            # manifest-tool push from-args \
+            #   --platforms linux/arm,linux/arm64,linux/amd64 \
+            #   --template "$REGISTRY/$IMAGE:$VERSION-ARCH" \
+            #   --target "$REGISTRY/$IMAGE:$VERSION"
+      # - run:
+          # name: Verify manifest was persisted remotely.
+          # command: |
+            # export VERSION=$(cat ~/VERSION)
+            # manifest-tool inspect "$REGISTRY/$IMAGE:$VERSION"
