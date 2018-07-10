@@ -1,24 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
-echo "Copying built binary for $GOARCH."
-if [ $GOARCH == 'amd64' ]; then
-  cp $HOME/go/bin/tiller .
-  touch qemu-amd64-static
-else
-  cp $HOME/go/bin/linux_${GOARCH}/tiller .
-  echo "Loading qemu libs for multi-arch support."
-  curl -sL https://github.com/multiarch/qemu-user-static/releases/download/${QEMU_VERSION}/qemu-${QEMU_ARCH}-static.tar.gz | tar xz
-  docker run --rm --privileged multiarch/qemu-user-static:register
-fi
+export VERSION_TAG="${REGISTRY}/${IMAGE}:${VERSION}-${GOARCH}"
+export LATEST_TAG="${REGISTRY}/${IMAGE}:latest-${GOARCH}"
 
-export VERSION_TAG="${REGISTRY}/${IMAGE}:${VERSION}-${TAG}"
-export LATEST_TAG="${REGISTRY}/${IMAGE}:latest-${TAG}"
-
-docker build -t $VERSION_TAG \
-  --build-arg target=$TARGET \
-  --build-arg arch=$QEMU_ARCH \
-  .
+docker build -t $VERSION_TAG --build-arg target=$TARGET .
 
 echo "Logging in to Docker Hub..."
 echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin
