@@ -8,7 +8,6 @@ export VERSION=$(\
 )
 
 echo 'Installing manifest-tool.'
-export VERSION=$(cat ~/VERSION)
 echo "Downloading manifest-tool."
 wget https://github.com/estesp/manifest-tool/releases/download/v0.7.0/manifest-tool-linux-amd64
 mv manifest-tool-linux-amd64 /usr/bin/manifest-tool
