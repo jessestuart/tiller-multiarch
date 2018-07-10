@@ -89,7 +89,11 @@ shared: &shared
           # Go won't let us cross-compile if GOBIN is set.
           sed -e 's/GOBIN=$(BINDIR) //' -i Makefile
           make build
-          cp /root/go/bin/tiller "$DIR"
+          if test "$GOARCH" == 'amd64'; then
+            cp $(which tiller) "$DIR"
+          else
+            cp "${GOPATH}/bin/linux_${GOARCH}/tiller" "$DIR"
+          fi
 
     - run:
         name: Build and push Docker image.
@@ -111,7 +115,7 @@ jobs:
     <<: *shared
     environment:
       GOARCH: arm
-      TARGET: arm32v7
+      TARGET: arm32v6
 
   # =======================================
   # ---------------------------------------
