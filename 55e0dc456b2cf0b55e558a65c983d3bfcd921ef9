@@ -1,0 +1,4 @@
+[ver:1,total:300]
+.circleci/install_go.sh:172,1531209600:172,m
+.circleci/load_env.sh:104,1531209600:104,m
+.circleci/config.yml:24,1531209600:24,m
