@@ -1,3 +1,14 @@
 [ver:1,total:120]
 .gtm/terminal.app:80,1533610800:80,r
 .circleci/load_env.sh:40,1533610800:40,m
+
+[ver:1,total:180]
+.gtm/terminal.app:120,1533610800:120,r
+.circleci/config.yml:40,1533610800:40,m
+.circleci/load_env.sh:20,1533610800:20,r
+
+[ver:1,total:720]
+.circleci/config.yml:392,1531281600:180,1531285200:180,1533610800:32,m
+Dockerfile:240,1531281600:240,r
+.gtm/terminal.app:56,1533610800:56,r
+.circleci/push-multiarch.sh:32,1533610800:32,r
