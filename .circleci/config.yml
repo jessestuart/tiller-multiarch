@@ -89,6 +89,7 @@ shared: &shared
     - run:
         name: Build and push Docker image.
         command: |
+          source "$BASH_ENV"
           .circleci/push-multiarch.sh
 
 jobs:
@@ -112,7 +113,7 @@ jobs:
     docker:
       - image: docker:stable-git
     environment:
-      GITHUB_REPO: kubernetes/helm
+      GITHUB_REPO: helm/helm
       IMAGE: tiller
       REGISTRY: jessestuart
     steps:
