@@ -34,7 +34,7 @@ shared: &shared
 
     - run:
         name: Install build dependencies.
-        command: apk add --no-cache bash curl jq make
+        command: apk add --no-cache bash curl jq make coreutils
 
     - run:
         # Unforunately, there's no easy way to "merge" anchors/references
@@ -122,6 +122,6 @@ jobs:
       - run:
           name: Push Docker manifest.
           command: |
-            apk add --no-cache bash curl jq
+            apk add --no-cache bash curl jq coreutils
             .circleci/load_env.sh
             .circleci/push-manifest.sh
