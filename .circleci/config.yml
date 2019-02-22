@@ -26,6 +26,7 @@ workflows:
                 - master
 
 shared: &shared
+  working_directory: /root/tiller
   docker:
     - image: docker:stable-git
   steps:
@@ -66,6 +67,7 @@ shared: &shared
 
     - restore_cache:
         keys:
+          - glide-{{ checksum "/root/go/src/k8s.io/helm/glide.yaml" }}-{{ checksum "/root/go/src/k8s.io/helm/glide.lock" }}-{{ .Revision }}
           - glide-{{ checksum "/root/go/src/k8s.io/helm/glide.yaml" }}-{{ checksum "/root/go/src/k8s.io/helm/glide.lock" }}
           - glide-
 
@@ -76,9 +78,10 @@ shared: &shared
           cd "$PROJECT_PATH" && make bootstrap
 
     - save_cache:
-        key: glide-{{ checksum "/root/go/src/k8s.io/helm/glide.yaml" }}-{{ checksum "/root/go/src/k8s.io/helm/glide.lock" }}
+        key: glide-{{ checksum "/root/go/src/k8s.io/helm/glide.yaml" }}-{{ checksum "/root/go/src/k8s.io/helm/glide.lock" }}-{{ .Revision }}
         paths:
-          - /home/circleci/.glide
+          - ~/.glide
+          - ~/go/bin
 
     - run:
         name: Compile architecture-specific tiller binary.
@@ -96,17 +99,17 @@ jobs:
   build-amd64:
     <<: *shared
     environment:
-      GOARCH: amd64
+      _GOARCH: amd64
       TARGET: amd64
   build-arm64:
     <<: *shared
     environment:
-      GOARCH: arm64
+      _GOARCH: arm64
       TARGET: arm64v8
   build-armhf:
     <<: *shared
     environment:
-      GOARCH: arm
+      _GOARCH: arm
       TARGET: arm32v6
 
   push-manifest:
