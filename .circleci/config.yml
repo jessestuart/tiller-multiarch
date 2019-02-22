@@ -66,6 +66,7 @@ shared: &shared
 
     - restore_cache:
         keys:
+          - glide-{{ checksum "/root/go/src/k8s.io/helm/glide.yaml" }}-{{ checksum "/root/go/src/k8s.io/helm/glide.lock" }}-{{ .Revision }}
           - glide-{{ checksum "/root/go/src/k8s.io/helm/glide.yaml" }}-{{ checksum "/root/go/src/k8s.io/helm/glide.lock" }}
           - glide-
 
@@ -74,23 +75,27 @@ shared: &shared
         command: |
           source "$BASH_ENV"
           cd "$PROJECT_PATH" && make bootstrap
+          echo "where gox: $(where gox)"
+          echo $PATH
+          go get github.com/mitchellh/gox
 
     - save_cache:
-        key: glide-{{ checksum "/root/go/src/k8s.io/helm/glide.yaml" }}-{{ checksum "/root/go/src/k8s.io/helm/glide.lock" }}
+        key: glide-{{ checksum "/root/go/src/k8s.io/helm/glide.yaml" }}-{{ checksum "/root/go/src/k8s.io/helm/glide.lock" }}-{{ .Revision }}
         paths:
-          - /home/circleci/.glide
+          - ~/.glide
+          - ~/go/bin
 
     - run:
         name: Compile architecture-specific tiller binary.
         command: |
           source "$BASH_ENV"
-          .circleci/build_binary.sh
+          sh .circleci/build_binary.sh
 
     - run:
         name: Build and push Docker image.
         command: |
           source "$BASH_ENV"
-          .circleci/push-multiarch.sh
+          sh .circleci/push-multiarch.sh
 
 jobs:
   build-amd64:
