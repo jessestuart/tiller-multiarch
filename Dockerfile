@@ -1,15 +1,17 @@
 ARG target
 
-FROM alpine:3.9 as builder
+FROM alpine:3.9 as certs
 RUN apk update && apk add ca-certificates socat && rm -rf /var/cache/apk/*
 
-FROM $target/golang:1.11-alpine
+FROM $target/golang:1.11-alpine as builder
 LABEL maintainer="Jesse Stuart <hi@jessestuart.com>"
 
 ENV HOME /tmp
 
 COPY helm /helm
 COPY tiller /tiller
+
+COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 EXPOSE 44134
 USER 65534
