@@ -102,17 +102,17 @@ jobs:
   build-amd64:
     <<: *shared
     environment:
-      GOARCH: amd64
+      _GOARCH: amd64
       TARGET: amd64
   build-arm64:
     <<: *shared
     environment:
-      GOARCH: arm64
+      _GOARCH: arm64
       TARGET: arm64v8
   build-armhf:
     <<: *shared
     environment:
-      GOARCH: arm
+      _GOARCH: arm
       TARGET: arm32v6
 
   push-manifest:
