@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-export VERSION_TAG="${REGISTRY}/${IMAGE}:${VERSION}-${GOARCH}"
-export LATEST_TAG="${REGISTRY}/${IMAGE}:latest-${GOARCH}"
+export VERSION_TAG="${REGISTRY}/${IMAGE}:${VERSION}-${_GOARCH}"
+export LATEST_TAG="${REGISTRY}/${IMAGE}:latest-${_GOARCH}"
 
 docker build -t $VERSION_TAG --build-arg target=$TARGET .
 
