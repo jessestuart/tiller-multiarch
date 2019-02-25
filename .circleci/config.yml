@@ -72,7 +72,7 @@ shared: &shared
           - glide-
 
     - run:
-        name: Bootstrap repo dependencies & compile architecture-specific binary.
+        name: Bootstrap repo dependencies.
         command: |
           source "$BASH_ENV"
           cd "$PROJECT_PATH" && make bootstrap
