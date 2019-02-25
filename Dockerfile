@@ -3,7 +3,7 @@ ARG target
 FROM alpine:3.9 as certs
 RUN apk update && apk add ca-certificates socat && rm -rf /var/cache/apk/*
 
-FROM $target/golang:1.11-alpine
+FROM $target/alpine:3.9
 LABEL maintainer="Jesse Stuart <hi@jessestuart.com>"
 
 ENV HOME /tmp
