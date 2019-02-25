@@ -3,12 +3,12 @@ version: 2.0
 build_jobs: &build_jobs
   jobs:
     - build-amd64
-    # - build-arm64
+    - build-arm64
     - build-armhf
     - push-manifest:
         requires:
           - build-amd64
-          # - build-arm64
+          - build-arm64
           - build-armhf
 
 workflows:
@@ -76,21 +76,18 @@ shared: &shared
         command: |
           source "$BASH_ENV"
           cd "$PROJECT_PATH" && make bootstrap
-          go get github.com/mitchellh/gox
-          which gox
-          ${CIRCLE_WORKING_DIRECTORY}/.circleci/build_binary.sh
-
-    # - run:
-    #     name: Compile architecture-specific tiller binary.
-    #     command: |
-    #       source "$BASH_ENV"
-    #       .circleci/build_binary.sh
 
     - save_cache:
         key: glide-{{ checksum "/root/go/src/k8s.io/helm/glide.yaml" }}-{{ checksum "/root/go/src/k8s.io/helm/glide.lock" }}-{{ .Revision }}
         paths:
           - ~/.glide
           - ~/go/bin
+
+    - run:
+        name: Compile architecture-specific tiller binary.
+        command: |
+          source "$BASH_ENV"
+          .circleci/build_binary.sh
 
     - run:
         name: Build and push Docker image.
