@@ -1,4 +1,5 @@
 #!/bin/bash
+
 rm -rf "$GOROOT" && mkdir "$GOROOT"
 
 # @see https://stackoverflow.com/questions/34729748/installed-go-binary-not-found-in-path-on-alpine-linux-docker

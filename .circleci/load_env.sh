@@ -1,4 +1,5 @@
 #!/bin/bash
+
 echo '
 export DIR=`pwd`
 export QEMU_VERSION=v3.0.0
@@ -12,8 +13,7 @@ export IMAGE=tiller
 export PROJECT_PATH=$GOPATH/src/$GO_REPO
 export REGISTRY=jessestuart
 export IMAGE_ID="${REGISTRY}/${IMAGE}:${VERSION}-${_GOARCH}"
+export PATH="$GOROOT/bin:$HOME/go/bin:$PATH"
 ' >>$BASH_ENV
-
-echo 'export PATH="$GOROOT/bin:$HOME/go/bin:$PATH"' >>$BASH_ENV
 
 source $BASH_ENV

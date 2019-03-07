@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -euo pipefail
 
 export VERSION_TAG="${REGISTRY}/${IMAGE}:${VERSION}-${_GOARCH}"

@@ -14,38 +14,55 @@
 [![Docker Pulls][dockerhub-badge]][dockerhub-link]
 [![][microbadger]][microbadger 2]
 
-Provides daily builds of Kubernetes Helm's `tiller` service as Docker images
-compatible with most major architectures:
+Nightly builds of [Kubernetes Helm's][github] `tiller` service as a multiarch
+Docker image. Using the [Docker Image Manifest V2 API][docker], we're able to
+support the three most common architectures with a single image:
 
 - amd64 (most PCs / cloud providers)
-- arm64 (many SBCs, including Odroid C2, Rock64, and RPi3 with 64-bit OS)
-- armhf / armv7 (most notably, the RPi family running stock Raspbian)
+- 64-bit ARM (stylized as either `arm64` or `aarch64`, although there are
+  [subtle differences][wikipedia]) This includes the majority of modern SBCs,
+  including:
+  - Most [Raspberry Pi][raspberrypi] boards,
+  - [Pine64][pine64] Rock64 / RockPro64 / Pine64
+  - [Hardkernel's][hardkernel] Odroid C2
+  - [Libre Computer][libre]'s `roc-rk3328-cc` "Renegade"
+- 32-bit ARM, `armhf` / `armv7` / `arm6l` (older Raspberry Pi boards, Odroid
+  XU4)
 
-Images are built compliant with v2.2 of the Docker manifest API. No need
-to specify separate images for different architectures (particularly annoying
-if you have an architecturally heterogeneous cluster); the Docker client infers
-for you which image to pull.
+As mentioned above, images are built compliant with v2.2 of the Docker manifest
+API. No need to specify separate images for different architectures
+(particularly annoying if you have an architecturally heterogeneous cluster);
+the Docker client infers for you which image to pull.
+
+---
 
 ### Usage / deployment
 
-If you've reached this repo, you're likely just trying to get a tiller pod
-deployed to your cluster. The simplest way to do that is to just substitute this
-image in the `helm init` command, e.g.,:
+Creating the `tiller` deployment with this image is as simple as running
+`helm init` and overriding the `--tiller-image` flag, i.e.:
 
 ```console
-$ helm init --tiller-image=jessestuart/tiller:v2.9.1
+$ helm init --tiller-image=jessestuart/tiller
 ```
 
 Note that depending on your version of Kubernetes and your RBAC configuration,
 you'll likely need to create and specify a `ServiceAccount` as well, e.g.:
 
 ```console
-$ helm init --tiller-image=jessestuart/tiller:v2.9.1 --service-account tiller
+$ kubectl apply -f manifests/tiller-rbac.yaml
+$ helm init --tiller-image=jessestuart/tiller --service-account tiller
 ```
 
 [circleci-badge]: https://img.shields.io/circleci/project/github/jessestuart/tiller-multiarch/master.svg?style=popout
 [circleci-link]: https://circleci.com/gh/jessestuart/tiller-multiarch/tree/master
+[docker]: https://docs.docker.com/registry/spec/manifest-v2-2/
 [dockerhub-badge]: https://img.shields.io/docker/pulls/jessestuart/tiller.svg?style=popout
 [dockerhub-link]: https://hub.docker.com/r/jessestuart/tiller/
-[microbadger]: https://images.microbadger.com/badges/image/jessestuart/tiller.svg
+[github]: https://github.com/helm/helm
+[hardkernel]: https://www.hardkernel.com/
+[libre]: https://libre.computer/products/boards/roc-rk3328-cc/
 [microbadger 2]: https://microbadger.com/images/jessestuart/tiller
+[microbadger]: https://images.microbadger.com/badges/image/jessestuart/tiller.svg
+[pine64]: https://www.pine64.org
+[raspberrypi]: https://www.raspberrypi.org/
+[wikipedia]: https://en.wikipedia.org/wiki/ARM_architecture#ARMv8-A
