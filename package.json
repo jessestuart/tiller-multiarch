@@ -7,9 +7,6 @@
     "semantic-release": "15.13.12"
   },
   "license": "MIT",
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org",
-    "access": "private"
-  },
+  "private": true,
   "repository": "git@github.com:jessestuart/tiller-multiarch.git"
 }
