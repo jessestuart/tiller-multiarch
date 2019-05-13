@@ -10,6 +10,9 @@ build_jobs: &build_jobs
           - build-amd64
           - build-arm64
           - build-armhf
+    - semantic_release:
+        requires:
+          - push-manifest
 
 workflows:
   version: 2
@@ -24,6 +27,19 @@ workflows:
             branches:
               only:
                 - master
+
+semantic_release: &semantic_release
+  working_directory: /root/tiller
+  docker:
+    - image: node:12
+  steps:
+    - checkout
+    - restore_cache:
+        keys:
+          - v1-node-{{ checksum 'yarn.lock' }}
+          - v1-node-
+    - run: yarn -s --frozen-lockfile --no-progress
+    - run: yarn semantic-release
 
 shared: &shared
   working_directory: /root/tiller
@@ -128,3 +144,5 @@ jobs:
             apk add --no-cache bash curl jq
             .circleci/load_env.sh
             .circleci/push-manifest.sh
+
+  semantic_release: *semantic_release
