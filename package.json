@@ -6,6 +6,9 @@
     "@semantic-release/git": "7.0.16",
     "semantic-release": "15.13.19"
   },
+  "resolutions": {
+    "mem": "^5"
+  },
   "license": "MIT",
   "private": true,
   "repository": "git@github.com:jessestuart/tiller-multiarch.git"
