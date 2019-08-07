@@ -59,27 +59,24 @@ shared: &shared
         # this is to dump your # values into a file and source it at build time.
         # @see e.g., https://circleci.com/docs/2.0/env-vars/#interpolating-environment-variables
         name: Set up shared environment vars.
-        command: .circleci/load_env.sh
+        command: sh -c scripts/load_env.sh
 
     - run:
         name: Update Go version.
         command: |
           source "$BASH_ENV"
-          .circleci/install_go.sh
+          sh -c scripts/install_go.sh
 
     - run:
         name: Install glide.
-        command: |
-          curl -sL https://github.com/Masterminds/glide/releases/download/v0.13.2/glide-v0.13.2-linux-amd64.tar.gz | tar xz
-          chmod +x linux-amd64/glide
-          mv linux-amd64/glide /usr/bin/glide
+        command: sh -c scripts/install_glide.sh
 
     - run:
         name: Clone repo.
         command: |
-          source "$BASH_ENV"
+          source $BASH_ENV
           mkdir -p "$PROJECT_PATH"
-          git clone "https://github.com/${GITHUB_REPO}" --depth=1 "$PROJECT_PATH" &>/dev/null
+          git clone "https://github.com/${GITHUB_REPO}" --depth=1 "$PROJECT_PATH"
 
     - restore_cache:
         keys:
@@ -90,7 +87,7 @@ shared: &shared
     - run:
         name: Bootstrap repo dependencies.
         command: |
-          source "$BASH_ENV"
+          source $BASH_ENV
           cd "$PROJECT_PATH" && make bootstrap
 
     - save_cache:
@@ -103,13 +100,13 @@ shared: &shared
         name: Compile architecture-specific tiller binary.
         command: |
           source "$BASH_ENV"
-          .circleci/build_binary.sh
+          sh -c scripts/build_binary.sh
 
     - run:
         name: Build and push Docker image.
         command: |
           source "$BASH_ENV"
-          .circleci/push-multiarch.sh
+          sh -c scripts/push-multiarch.sh
 
 jobs:
   build-amd64:
@@ -142,7 +139,7 @@ jobs:
           name: Push Docker manifest.
           command: |
             apk add --no-cache bash curl jq
-            .circleci/load_env.sh
-            .circleci/push-manifest.sh
+            sh -c scripts/load_env.sh
+            sh -c scripts/push-manifest.sh
 
   semantic_release: *semantic_release
