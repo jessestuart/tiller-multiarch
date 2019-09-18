@@ -1,6 +1,6 @@
 {
   "name": "@jesses/tiller-multiarch",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": "Jesse Stuart <hi@jessestuart.com>",
   "devDependencies": {
     "@semantic-release/git": "7.0.16",
