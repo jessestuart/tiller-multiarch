@@ -1,4 +1,4 @@
-version: 2.1
+version: 2
 
 build_jobs: &build_jobs
   jobs:
@@ -51,7 +51,7 @@ shared: &shared
 
     - run:
         name: Install build dependencies.
-        command: apk add --no-cache bash curl jq make
+        command: apk add --upgrade --no-cache bash curl jq make
 
     - run:
         # Unforunately, there's no easy way to "merge" anchors/references
@@ -59,17 +59,19 @@ shared: &shared
         # this is to dump your # values into a file and source it at build time.
         # @see e.g., https://circleci.com/docs/2.0/env-vars/#interpolating-environment-variables
         name: Set up shared environment vars.
-        command: sh -c scripts/load_env.sh
+        command: sh scripts/load_env.sh
 
     - run:
         name: Update Go version.
+        environment:
+          GOROOT: /usr/local/go/
         command: |
           source "$BASH_ENV"
-          sh -c scripts/install_go.sh
+          sh scripts/install_go.sh
 
     - run:
         name: Install glide.
-        command: sh -c scripts/install_glide.sh
+        command: sh scripts/install_glide.sh
 
     - run:
         name: Clone repo.
@@ -100,13 +102,13 @@ shared: &shared
         name: Compile architecture-specific tiller binary.
         command: |
           source "$BASH_ENV"
-          sh -c scripts/build_binary.sh
+          sh scripts/build_binary.sh
 
     - run:
         name: Build and push Docker image.
         command: |
           source "$BASH_ENV"
-          sh -c scripts/push-multiarch.sh
+          sh scripts/push-multiarch.sh
 
 jobs:
   build-amd64:
@@ -138,7 +140,7 @@ jobs:
       - run:
           name: Push Docker manifest.
           command: |
-            apk add --no-cache bash curl jq
+            apk add --upgrade --no-cache bash curl jq
             sh -c scripts/load_env.sh
             sh -c scripts/push-manifest.sh
 
