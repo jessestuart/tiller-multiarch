@@ -75,12 +75,8 @@ shared: &shared
           source $BASH_ENV
           mkdir -p "$PROJECT_PATH"
           git clone "https://github.com/${GITHUB_REPO}" --depth=1 "$PROJECT_PATH"
-
-    - run:
-        name: Bootstrap repo dependencies.
-        command: |
-          source $BASH_ENV
           cd "$PROJECT_PATH"
+          git checkout $VERSION
 
     - run:
         name: Compile architecture-specific tiller binary.
