@@ -70,33 +70,17 @@ shared: &shared
           sh scripts/install_go.sh
 
     - run:
-        name: Install glide.
-        command: sh scripts/install_glide.sh
-
-    - run:
         name: Clone repo.
         command: |
           source $BASH_ENV
           mkdir -p "$PROJECT_PATH"
           git clone "https://github.com/${GITHUB_REPO}" --depth=1 "$PROJECT_PATH"
 
-    - restore_cache:
-        keys:
-          - glide-{{ checksum "/root/go/src/k8s.io/helm/glide.yaml" }}-{{ checksum "/root/go/src/k8s.io/helm/glide.lock" }}-{{ .Revision }}
-          - glide-{{ checksum "/root/go/src/k8s.io/helm/glide.yaml" }}-{{ checksum "/root/go/src/k8s.io/helm/glide.lock" }}
-          - glide-
-
     - run:
         name: Bootstrap repo dependencies.
         command: |
           source $BASH_ENV
-          cd "$PROJECT_PATH" && make bootstrap
-
-    - save_cache:
-        key: glide-{{ checksum "/root/go/src/k8s.io/helm/glide.yaml" }}-{{ checksum "/root/go/src/k8s.io/helm/glide.lock" }}-{{ .Revision }}
-        paths:
-          - ~/.glide
-          - ~/go/bin
+          cd "$PROJECT_PATH"
 
     - run:
         name: Compile architecture-specific tiller binary.
