@@ -1,4 +1,9 @@
 ARG target
+FROM golang:1.13 as builder
+
+RUN git clone https://github.com/helm/helm && cd helm
+RUN go get -v ./...
+RUN make build-cross
 
 FROM alpine:3.10 as certs
 RUN apk add --no-cache ca-certificates socat
