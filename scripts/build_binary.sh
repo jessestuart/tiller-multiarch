@@ -13,5 +13,4 @@ sed -e "s/^TARGETS.*$/TARGETS \?\= linux\/${_GOARCH}/" -i Makefile
 
 make build-cross
 
-cp "$PROJECT_PATH/_dist/linux-${_GOARCH}/tiller" "${CIRCLE_WORKING_DIRECTORY}"
 cp "$PROJECT_PATH/_dist/linux-${_GOARCH}/helm" "${CIRCLE_WORKING_DIRECTORY}"
