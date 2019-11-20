@@ -2,11 +2,7 @@
 
 set -eu
 
-cd "$PROJECT_PATH" || exit 1
-
 docker run --rm --privileged multiarch/qemu-user-static:register
-
-mkdir -p "$PROJECT_PATH"
 
 git clone "https://github.com/${GITHUB_REPO}" --depth=1 "$PROJECT_PATH"
 cd "$PROJECT_PATH"

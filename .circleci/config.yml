@@ -69,15 +69,6 @@ shared: &shared
           source "$BASH_ENV"
           sh scripts/install_go.sh
 
-    # - run:
-    #     name: Clone repo.
-    #     command: |
-    #       source $BASH_ENV
-    #       mkdir -p "$PROJECT_PATH"
-    #       git clone "https://github.com/${GITHUB_REPO}" --depth=1 "$PROJECT_PATH"
-    #       cd "$PROJECT_PATH"
-    #       git checkout $VERSION
-
     - run:
         name: Compile architecture-specific tiller binary.
         command: |
