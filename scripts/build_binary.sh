@@ -4,7 +4,7 @@ set -eu
 
 docker run --rm --privileged multiarch/qemu-user-static:register
 
-git clone "https://github.com/${GITHUB_REPO}" --depth=1 "$PROJECT_PATH"
+git clone "https://github.com/${GITHUB_REPO}" "$PROJECT_PATH"
 cd "$PROJECT_PATH"
 
 git checkout $VERSION
