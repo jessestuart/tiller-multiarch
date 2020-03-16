@@ -4,7 +4,7 @@
   "author": "Jesse Stuart <hi@jessestuart.com>",
   "devDependencies": {
     "@semantic-release/git": "9.0.0",
-    "semantic-release": "17.0.2"
+    "semantic-release": "17.0.4"
   },
   "license": "MIT",
   "private": true,
