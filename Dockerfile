@@ -1,9 +1,9 @@
 ARG target
 
-FROM alpine:3.10 as certs
+FROM alpine:3.11 as certs
 RUN apk add --no-cache ca-certificates socat
 
-FROM $target/alpine:3.10
+FROM $target/alpine:3.11
 LABEL maintainer="Jesse Stuart <hi@jessestuart.com>"
 
 ENV HOME /tmp
