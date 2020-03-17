@@ -80,7 +80,7 @@ shared: &shared
           mkdir -p "$PROJECT_PATH"
           git clone "https://github.com/${GITHUB_REPO}" "$PROJECT_PATH"
           cd "$PROJECT_PATH"
-          git checkout v2.16.1
+          git checkout $VERSION
 
     - restore_cache:
         keys:
